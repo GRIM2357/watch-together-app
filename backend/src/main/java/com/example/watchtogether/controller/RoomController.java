@@ -3,12 +3,12 @@ package com.example.watchtogether.controller;
 import com.example.watchtogether.dto.*;
 import com.example.watchtogether.model.Room;
 import com.example.watchtogether.service.RoomService;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/rooms")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:5173"})
 public class RoomController {
 
     private final RoomService roomService;
@@ -18,7 +18,7 @@ public class RoomController {
     }
 
     @PostMapping
-    public Room createRoom(@RequestBody CreateRoomRequest request) {
+    public Room createRoom(@Valid @RequestBody CreateRoomRequest request) {
         return roomService.createRoom(request.getUserId(), request.getUsername());
     }
 
@@ -28,12 +28,12 @@ public class RoomController {
     }
 
     @PostMapping("/join")
-    public Room joinRoom(@RequestBody JoinRoomRequest request) {
+    public Room joinRoom(@Valid @RequestBody JoinRoomRequest request) {
         return roomService.joinRoom(request.getRoomCode(), request.getUserId(), request.getUsername());
     }
 
     @PostMapping("/{roomCode}/video")
-    public Room addVideo(@PathVariable String roomCode, @RequestBody VideoRequest request) {
+    public Room addVideo(@PathVariable String roomCode, @Valid @RequestBody VideoRequest request) {
         return roomService.addVideo(
                 roomCode,
                 request.getUserId(),
@@ -44,7 +44,7 @@ public class RoomController {
     }
 
     @PostMapping("/{roomCode}/chat")
-    public Room addChatMessage(@PathVariable String roomCode, @RequestBody ChatRequest request) {
+    public Room addChatMessage(@PathVariable String roomCode, @Valid @RequestBody ChatRequest request) {
         return roomService.addChatMessage(
                 roomCode,
                 request.getUserId(),
@@ -54,7 +54,7 @@ public class RoomController {
     }
 
     @PostMapping("/{roomCode}/playback")
-    public Room updatePlaybackState(@PathVariable String roomCode, @RequestBody PlaybackStateRequest request) {
+    public Room updatePlaybackState(@PathVariable String roomCode, @Valid @RequestBody PlaybackStateRequest request) {
         return roomService.updatePlaybackState(
                 roomCode,
                 request.getUserId(),

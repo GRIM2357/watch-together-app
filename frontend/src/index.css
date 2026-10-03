@@ -36,11 +36,26 @@ button {
   color: white;
   font-weight: 600;
   cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 button.secondary {
   background: #1e293b;
   border: 1px solid #334155;
+}
+
+button.secondary:hover:not(:disabled) {
+  background: #334155;
 }
 
 input {
@@ -50,6 +65,13 @@ input {
   color: white;
   padding: 10px 12px;
   border-radius: 10px;
+  transition: all 0.2s ease;
+}
+
+input:focus {
+  outline: 2px solid rgba(59, 130, 246, 0.5);
+  outline-offset: 2px;
+  border-color: #3b82f6;
 }
 
 label {
@@ -58,6 +80,16 @@ label {
   gap: 8px;
   font-size: 0.85rem;
   color: #cbd5e1;
+}
+
+.error-box {
+  margin-top: 16px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #fecaca;
+  font-size: 0.9rem;
 }
 
 .app-shell {
@@ -95,6 +127,10 @@ label {
   gap: 12px;
 }
 
+.row button {
+  flex: 1;
+}
+
 .panel {
   margin-top: 22px;
   padding-top: 14px;
@@ -107,14 +143,17 @@ label {
   align-items: center;
   margin-top: 10px;
   color: #d9e6f7;
+  font-size: 0.9rem;
 }
 
 .online {
   color: #4ade80;
+  font-size: 0.8rem;
 }
 
 .offline {
   color: #94a3b8;
+  font-size: 0.8rem;
 }
 
 .main-panel {
@@ -147,6 +186,13 @@ label {
   color: #cbd5e1;
 }
 
+.controls {
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  border-radius: 16px;
+  padding: 16px;
+}
+
 .field-grid {
   display: grid;
   gap: 10px;
@@ -168,7 +214,7 @@ label {
   border-radius: 12px;
   padding: 14px;
   border: 1px solid rgba(148, 163, 184, 0.12);
-  overflow: auto;
+  overflow-y: auto;
 }
 
 .chat-message {
@@ -180,14 +226,69 @@ label {
   border-radius: 10px;
 }
 
+.chat-message strong {
+  color: #60a5fa;
+  font-size: 0.85rem;
+}
+
+.chat-message span {
+  color: #d9e6f7;
+  font-size: 0.9rem;
+}
+
 .chat-input {
   display: flex;
   gap: 10px;
   margin-top: 14px;
 }
 
-@media (max-width: 1100px) {
+.chat-input input {
+  flex: 1;
+}
+
+.chat-input button {
+  flex: 0 0 auto;
+  min-width: 70px;
+}
+
+h3 {
+  margin: 0 0 12px 0;
+  font-size: 1rem;
+  color: #e5eefb;
+}
+
+p {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 1200px) {
   .app-shell {
     grid-template-columns: 1fr;
+  }
+
+  .sidebar,
+  .main-panel,
+  .chat-panel {
+    grid-column: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .app-shell {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .sidebar,
+  .main-panel,
+  .chat-panel {
+    padding: 12px;
+    border-radius: 12px;
+  }
+
+  .video-panel iframe {
+    min-height: 300px;
   }
 }

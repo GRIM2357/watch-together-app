@@ -36,6 +36,30 @@ interface RoomData {
 
 const API_BASE = "http://localhost:8080/api";
 
+const normalizeUrl = (value: string) => {
+  if (!value) return "";
+  const trimmed = value.trim();
+
+  if (trimmed.includes("youtube.com/watch?v=")) {
+    const match = trimmed.match(/v=([A-Za-z0-9_-]+)/);
+    return match ? `https://www.youtube.com/embed/${match[1]}` : trimmed;
+  }
+
+  if (trimmed.includes("youtu.be/")) {
+    const match = trimmed.match(/youtu\.be\/([A-Za-z0-9_-]+)/);
+    return match ? `https://www.youtube.com/embed/${match[1]}` : trimmed;
+  }
+
+  return trimmed;
+};
+
+const getErrorMessage = (error: unknown) => {
+  if (axios.isAxiosError(error)) {
+    return error.response?.data?.message || error.message;
+  }
+  return "Something went wrong";
+};
+
 export default function App() {
   const [roomCode, setRoomCode] = useState("TRIAL1");
   const [userName, setUserName] = useState("User");
@@ -43,6 +67,8 @@ export default function App() {
   const [videoUrl, setVideoUrl] = useState("https://www.youtube.com/watch?v=7KQwA6n5K8I");
   const [chatText, setChatText] = useState("");
   const [room, setRoom] = useState<RoomData | null>(null);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const playerUrl = useMemo(() => {
     if (!room?.currentVideo?.url) return "";
@@ -50,59 +76,120 @@ export default function App() {
   }, [room]);
 
   const createRoom = async () => {
-    const response = await axios.post(`${API_BASE}/rooms`, {
-      userId: "user-1",
-      username: userName
-    });
-    setRoom(response.data);
-    setRoomCode(response.data.code);
+    if (!userName.trim()) {
+      setError("Username is required");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await axios.post(`${API_BASE}/rooms`, {
+        userId: `user-${Date.now()}`,
+        username: userName.trim()
+      });
+      setRoom(response.data);
+      setRoomCode(response.data.code);
+    } catch (err) {
+      setError(getErrorMessage(err));
+    } finally {
+      setLoading(false);
+    }
   };
 
   const joinRoom = async () => {
-    const response = await axios.post(`${API_BASE}/rooms/join`, {
-      roomCode,
-      userId: "user-2",
-      username: userName
-    });
-    setRoom(response.data);
+    if (!roomCode.trim() || !userName.trim()) {
+      setError("Room code and username are required");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await axios.post(`${API_BASE}/rooms/join`, {
+        roomCode: roomCode.trim().toUpperCase(),
+        userId: `user-${Date.now()}`,
+        username: userName.trim()
+      });
+      setRoom(response.data);
+    } catch (err) {
+      setError(getErrorMessage(err));
+    } finally {
+      setLoading(false);
+    }
   };
 
   const addVideo = async () => {
-    if (!room) return;
+    if (!room) {
+      setError("Create or join a room first");
+      return;
+    }
+    if (!videoTitle.trim() || !videoUrl.trim()) {
+      setError("Title and URL are required");
+      return;
+    }
 
-    const response = await axios.post(`${API_BASE}/rooms/${room.code}/video`, {
-      userId: "user-1",
-      title: videoTitle,
-      url: videoUrl,
-      source: "youtube"
-    });
+    setLoading(true);
+    setError("");
 
-    setRoom(response.data);
+    try {
+      const response = await axios.post(`${API_BASE}/rooms/${room.code}/video`, {
+        userId: `user-${Date.now()}`,
+        title: videoTitle.trim(),
+        url: normalizeUrl(videoUrl),
+        source: "youtube"
+      });
+      setRoom(response.data);
+      setVideoTitle("");
+      setVideoUrl("");
+    } catch (err) {
+      setError(getErrorMessage(err));
+    } finally {
+      setLoading(false);
+    }
   };
 
   const sendMessage = async () => {
     if (!room || !chatText.trim()) return;
 
-    const response = await axios.post(`${API_BASE}/rooms/${room.code}/chat`, {
-      userId: "user-1",
-      username: userName,
-      message: chatText
-    });
+    setLoading(true);
+    setError("");
 
-    setRoom(response.data);
-    setChatText("");
+    try {
+      const response = await axios.post(`${API_BASE}/rooms/${room.code}/chat`, {
+        userId: `user-${Date.now()}`,
+        username: userName.trim(),
+        message: chatText.trim()
+      });
+      setRoom(response.data);
+      setChatText("");
+    } catch (err) {
+      setError(getErrorMessage(err));
+    } finally {
+      setLoading(false);
+    }
   };
 
   const syncPlayback = async (status: string, currentTime: number) => {
     if (!room) return;
 
-    const response = await axios.post(`${API_BASE}/rooms/${room.code}/playback`, {
-      userId: "user-1",
-      status,
-      currentTime
-    });
+    setLoading(true);
+    setError("");
 
-    setRoom(response.data);
+    try {
+      const response = await axios.post(`${API_BASE}/rooms/${room.code}/playback`, {
+        userId: `user-${Date.now()}`,
+        status,
+        currentTime
+      });
+      setRoom(response.data);
+    } catch (err) {
+      setError(getErrorMessage(err));
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -122,10 +209,12 @@ export default function App() {
           </label>
 
           <div className="row">
-            <button onClick={createRoom}>Create room</button>
-            <button onClick={joinRoom} className="secondary">Join</button>
+            <button onClick={createRoom} disabled={loading}>Create room</button>
+            <button onClick={joinRoom} className="secondary" disabled={loading}>Join</button>
           </div>
         </div>
+
+        {error && <div className="error-box">{error}</div>}
 
         <div className="panel">
           <h3>Room members</h3>
@@ -176,11 +265,11 @@ export default function App() {
           </div>
 
           <div className="row">
-            <button onClick={addVideo}>Add video</button>
-            <button className="secondary" onClick={() => syncPlayback("PLAYING", 10)}>
+            <button onClick={addVideo} disabled={loading}>Add video</button>
+            <button className="secondary" onClick={() => syncPlayback("PLAYING", 10)} disabled={loading}>
               Play
             </button>
-            <button className="secondary" onClick={() => syncPlayback("PAUSED", 10)}>
+            <button className="secondary" onClick={() => syncPlayback("PAUSED", 10)} disabled={loading}>
               Pause
             </button>
           </div>
@@ -207,8 +296,13 @@ export default function App() {
             value={chatText}
             onChange={(e) => setChatText(e.target.value)}
             placeholder="Say something..."
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                sendMessage();
+              }
+            }}
           />
-          <button onClick={sendMessage}>Send</button>
+          <button onClick={sendMessage} disabled={loading}>Send</button>
         </div>
       </aside>
     </div>
