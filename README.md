@@ -1,47 +1,38 @@
-# Watch Together App
+# Watch Together MVP
 
-A web application where people can watch random content together in real-time with synchronized playback and chat.
+## Overview
+A Watch2Gether-style web app for watching content together in real time.
+
+## Stack
+- Frontend: React + Vite + TypeScript
+- Backend: Spring Boot + Java
+- Auth / realtime sync: Firebase-ready
 
 ## Features
-- Create and join rooms
-- Synchronized video playback across multiple users
-- Support for YouTube, Vimeo, Twitch, and other platforms
-- Random video selection
-- Queue system for upcoming videos
-- Real-time chat
-- Host controls (pause, play, skip, randomize)
-- User presence and online status
-- Firebase authentication
+- Create and join room
+- Video queue
+- Host controls
+- Chat panel
+- Playback state sync
+- Randomized room flow
 
-## Tech Stack
-- **Frontend**: React + TypeScript
-- **Backend**: Spring Boot + Java
-- **Database**: Firebase Firestore
-- **Authentication**: Firebase Auth
-- **Real-time Communication**: Firebase Realtime Database / WebSockets
+## Run
 
-## Project Structure
-```
-.
-├── backend/          # Spring Boot application
-├── frontend/         # React application
-└── README.md
-```
-
-## Getting Started
-
-### Backend Setup
+### Backend
 ```bash
 cd backend
 ./mvnw spring-boot:run
 ```
 
-### Frontend Setup
+### Frontend
 ```bash
 cd frontend
 npm install
-npm start
+npm run dev
 ```
 
-## Environment Variables
-Create `.env` files in both `backend/` and `frontend/` directories with Firebase credentials.
+Then open http://localhost:3000
+
+## Notes
+- Add your Firebase credentials in `backend/src/main/resources/firebase-service-account.json`
+- The backend is intentionally implemented as a lightweight MVP in-memory room store for initial use
